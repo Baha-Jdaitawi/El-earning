@@ -3,6 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCourse } from '../../../store/slices/coursesSlice.js';
 import { enroll, fetchEnrollmentStatus } from '../../../store/slices/enrollmentSlice.js';
+import { getReviewsService, getMyReviewService, createReviewService, updateReviewService } from '../../reviews/services/reviewService.js';
+import ReviewForm from '../../reviews/components/ReviewForm.jsx';
+import ReviewList from '../../reviews/components/ReviewList.jsx';
 
 const CATEGORY_THUMBNAILS = {
   'Web Development': 'https://images.unsplash.com/photo-1593720213428-28a5b9e94613?w=800&q=80',
@@ -107,14 +110,19 @@ const CourseDetailPage = () => {
   const [modules, setModules] = useState([]);
   const [enrolling, setEnrolling] = useState(false);
   const [openModule, setOpenModule] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [reviewStats, setReviewStats] = useState(null);
+  const [myReview, setMyReview] = useState(null);
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
 
   const enrolled = status?.enrolled || false;
   const isStudent = !user || user.role === 'student';
 
- useEffect(() => {
-  dispatch(fetchCourse(parseInt(id)));
-  if (user && user.role === 'student') dispatch(fetchEnrollmentStatus(parseInt(id)));
-}, [dispatch, id, user]);
+  useEffect(() => {
+    dispatch(fetchCourse(parseInt(id)));
+    if (user && user.role === 'student') dispatch(fetchEnrollmentStatus(parseInt(id)));
+  }, [dispatch, id, user]);
 
   useEffect(() => {
     if (course?.id) {
@@ -133,8 +141,22 @@ const CourseDetailPage = () => {
           if (modulesWithLessons.length > 0) setOpenModule(modulesWithLessons[0].id);
         })
         .catch(() => {});
+
+      loadReviews();
     }
   }, [course?.id, id]);
+
+  const loadReviews = async () => {
+    const data = await getReviewsService(id).catch(() => null);
+    if (data) {
+      setReviews(data.data || []);
+      setReviewStats(data.stats);
+    }
+    if (user?.role === 'student') {
+      const my = await getMyReviewService(id).catch(() => null);
+      setMyReview(my);
+    }
+  };
 
   const handleEnroll = async () => {
     if (!user) return navigate('/login');
@@ -153,6 +175,22 @@ const CourseDetailPage = () => {
       if (firstLesson) return navigate(`/learn/${id}/lesson/${firstLesson.id}`);
       navigate('/dashboard');
     }
+  };
+
+  const handleReviewSubmit = async (data) => {
+    setReviewLoading(true);
+    try {
+      if (myReview) {
+        await updateReviewService(myReview.id, data);
+      } else {
+        await createReviewService({ ...data, course_id: parseInt(id) });
+      }
+      setShowReviewForm(false);
+      loadReviews();
+    } catch (err) {
+      console.error(err);
+    }
+    setReviewLoading(false);
   };
 
   const totalLessons = modules.reduce((sum, m) => sum + parseInt(m.lesson_count || 0), 0);
@@ -195,6 +233,15 @@ const CourseDetailPage = () => {
                 <UsersIcon />
                 {parseInt(course.enrolled_students || 0).toLocaleString()} students
               </span>
+              {reviewStats && parseInt(reviewStats.total_reviews) > 0 && (
+                <span className="inline-flex items-center gap-1">
+                  <svg className="h-4 w-4 text-amber-400" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                  </svg>
+                  <span className="font-medium text-gray-900">{reviewStats.average_rating}</span>
+                  <span className="text-gray-400">({reviewStats.total_reviews})</span>
+                </span>
+              )}
             </div>
           </div>
 
@@ -312,6 +359,38 @@ const CourseDetailPage = () => {
         </aside>
 
       </div>
+
+      {/* Reviews */}
+      <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-gray-900">Student Reviews</h2>
+          {enrolled && isStudent && !showReviewForm && (
+            <button
+              onClick={() => setShowReviewForm(true)}
+              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+            >
+              {myReview ? 'Edit Review' : 'Write a Review'}
+            </button>
+          )}
+        </div>
+
+        {showReviewForm && (
+          <div className="mb-6 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+            <h3 className="mb-4 text-base font-semibold text-gray-900">
+              {myReview ? 'Edit Your Review' : 'Write a Review'}
+            </h3>
+            <ReviewForm
+              onSubmit={handleReviewSubmit}
+              onCancel={() => setShowReviewForm(false)}
+              loading={reviewLoading}
+              initialData={myReview}
+            />
+          </div>
+        )}
+
+        <ReviewList reviews={reviews} stats={reviewStats} loading={false} />
+      </section>
+
     </div>
   );
 };

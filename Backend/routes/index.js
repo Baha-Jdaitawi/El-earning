@@ -10,6 +10,8 @@ import progressRoutes from './progress.routes.js';
 import quizRoutes from './quiz.routes.js';
 import assignmentRoutes from './assignment.routes.js';
 import submissionRoutes from './submission.routes.js';
+import reviewRoutes from './review.routes.js';
+
 
 const router = express.Router();
 
@@ -24,5 +26,7 @@ router.use('/progress', progressRoutes);
 router.use('/quizzes', quizRoutes);
 router.use('/assignments', assignmentRoutes);
 router.use('/submissions', submissionRoutes);
+router.use('/reviews', reviewRoutes);
+
 
 export default router;
