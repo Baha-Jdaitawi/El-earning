@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import useAuth from '../hooks/useAuth.js';
 
 const Spinner = () => (
@@ -25,6 +26,8 @@ const ROLE_OPTIONS = [
 
 const RegisterPage = () => {
   const { handleRegister, loading, error, clearError } = useAuth();
+  const { user } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -36,10 +39,18 @@ const RegisterPage = () => {
   const passwordsMatch = password.length > 0 && password === confirmPassword;
   const showMismatch = confirmPassword.length > 0 && !passwordsMatch;
 
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'admin') navigate('/admin/dashboard');
+      else if (user.role === 'instructor') navigate('/instructor/dashboard');
+      else navigate('/dashboard');
+    }
+  }, [user, navigate]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!passwordsMatch) return;
-    clearError();
+    if (clearError) clearError();
     handleRegister({ name, email, password, role });
   };
 
@@ -49,9 +60,7 @@ const RegisterPage = () => {
 
         <div className="mb-8 flex flex-col items-center gap-3">
           <span className="text-2xl font-bold tracking-tight text-gray-900">LearnHub</span>
-          <p className="text-center text-sm text-gray-500">
-            Create your account to start learning.
-          </p>
+          <p className="text-center text-sm text-gray-500">Create your account to start learning.</p>
         </div>
 
         <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
@@ -115,9 +124,7 @@ const RegisterPage = () => {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
-                Confirm Password
-              </label>
+              <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">Confirm Password</label>
               <div className="relative">
                 <input
                   id="confirmPassword"
@@ -140,12 +147,8 @@ const RegisterPage = () => {
                   {showConfirm ? 'Hide' : 'Show'}
                 </button>
               </div>
-              {showMismatch && (
-                <p className="text-xs text-rose-600">Passwords do not match.</p>
-              )}
-              {passwordsMatch && (
-                <p className="text-xs text-emerald-600">Passwords match.</p>
-              )}
+              {showMismatch && <p className="text-xs text-rose-600">Passwords do not match.</p>}
+              {passwordsMatch && <p className="text-xs text-emerald-600">Passwords match.</p>}
             </div>
 
             <fieldset className="flex flex-col gap-1.5">
@@ -194,6 +197,7 @@ const RegisterPage = () => {
             </div>
           </div>
 
+        
           <a
             href={`${import.meta.env.VITE_API_URL}/auth/google`}
             className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"

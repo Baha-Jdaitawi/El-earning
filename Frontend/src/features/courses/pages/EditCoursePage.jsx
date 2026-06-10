@@ -26,20 +26,20 @@ const EditCoursePage = () => {
     getCategoriesApi().then((res) => setCategories(res.data.data || [])).catch(() => {});
   }, [id]);
 
-  const handleSubmit = async (data) => {
-    const result = await dispatch(updateCourse({ id: parseInt(id), data }));
-    if (result.meta.requestStatus === 'fulfilled') {
-      setSuccess('Course updated successfully.');
-      setTimeout(() => setSuccess(null), 3000);
-    }
-  };
+const handleSubmit = async (data) => {
+  const result = await dispatch(updateCourse({ id: parseInt(id), data }));
+  if (result.meta.requestStatus === 'fulfilled') {
+    setSuccess('Course updated successfully. Redirecting...');
+    setTimeout(() => navigate('/instructor/dashboard'), 2000);
+  }
+};
 
   const handleDelete = async () => {
-    const result = await dispatch(deleteCourse(parseInt(id)));
-    if (result.meta.requestStatus === 'fulfilled') {
-      navigate('/instructor/dashboard');
-    }
-  };
+  const result = await dispatch(deleteCourse(parseInt(id)));
+  if (result.meta.requestStatus === 'fulfilled') {
+    navigate('/instructor/dashboard');
+  }
+};
 
   if (!course) return null;
 

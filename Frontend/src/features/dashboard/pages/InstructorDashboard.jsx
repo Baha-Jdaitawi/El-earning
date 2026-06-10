@@ -140,20 +140,11 @@ const InstructorDashboard = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
 
-        <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
-              Welcome back, {user?.name?.split(' ')[0]}
-            </h1>
-            <p className="mt-1 text-sm text-gray-500">Manage your courses and review student submissions.</p>
-          </div>
-          <button
-            onClick={() => navigate('/instructor/courses/create')}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700"
-          >
-            <span className="text-lg leading-none">+</span>
-            New Course
-          </button>
+        <header className="mb-8">
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
+            Welcome back, {user?.name?.split(' ')[0]}
+          </h1>
+          <p className="mt-1 text-sm text-gray-500">Manage your courses and review student submissions.</p>
         </header>
 
         {/* Stats */}

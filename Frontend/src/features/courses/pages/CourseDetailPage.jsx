@@ -4,6 +4,16 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchCourse } from '../../../store/slices/coursesSlice.js';
 import { enroll, fetchEnrollmentStatus } from '../../../store/slices/enrollmentSlice.js';
 
+const CATEGORY_THUMBNAILS = {
+  'Web Development': 'https://images.unsplash.com/photo-1593720213428-28a5b9e94613?w=800&q=80',
+  'Mobile Development': 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&q=80',
+  'Data Science': 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80',
+  'DevOps': 'https://images.unsplash.com/photo-1667372393119-3d4c48d07fc9?w=800&q=80',
+  'Design': 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&q=80',
+};
+
+const DEFAULT_THUMBNAIL = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80';
+
 const UsersIcon = () => (
   <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
     <circle cx={9} cy={8} r={3.2} stroke="currentColor" strokeWidth={1.8} />
@@ -99,11 +109,12 @@ const CourseDetailPage = () => {
   const [openModule, setOpenModule] = useState(null);
 
   const enrolled = status?.enrolled || false;
+  const isStudent = !user || user.role === 'student';
 
-  useEffect(() => {
-    dispatch(fetchCourse(parseInt(id)));
-    if (user) dispatch(fetchEnrollmentStatus(parseInt(id)));
-  }, [dispatch, id, user]);
+ useEffect(() => {
+  dispatch(fetchCourse(parseInt(id)));
+  if (user && user.role === 'student') dispatch(fetchEnrollmentStatus(parseInt(id)));
+}, [dispatch, id, user]);
 
   useEffect(() => {
     if (course?.id) {
@@ -127,18 +138,15 @@ const CourseDetailPage = () => {
 
   const handleEnroll = async () => {
     if (!user) return navigate('/login');
-
     if (enrolled) {
       const firstModule = modules[0];
       const firstLesson = firstModule?.lessons?.[0];
       if (firstLesson) return navigate(`/learn/${id}/lesson/${firstLesson.id}`);
       return navigate('/dashboard');
     }
-
     setEnrolling(true);
     const result = await dispatch(enroll(parseInt(id)));
     setEnrolling(false);
-
     if (result.meta.requestStatus === 'fulfilled') {
       const firstModule = modules[0];
       const firstLesson = firstModule?.lessons?.[0];
@@ -149,6 +157,7 @@ const CourseDetailPage = () => {
 
   const totalLessons = modules.reduce((sum, m) => sum + parseInt(m.lesson_count || 0), 0);
   const totalDuration = modules.reduce((sum, m) => sum + parseInt(m.total_duration || 0), 0);
+  const thumbnail = course?.thumbnail || CATEGORY_THUMBNAILS[course?.category_name] || DEFAULT_THUMBNAIL;
 
   if (loading || !course) {
     return (
@@ -190,10 +199,11 @@ const CourseDetailPage = () => {
           </div>
 
           <div className="flex flex-col gap-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-            <div className="relative aspect-video overflow-hidden rounded-xl bg-gray-100">
+            <div className="relative aspect-video overflow-hidden rounded-xl">
               <img
-                src={course.thumbnail || '/placeholder.jpg'}
+                src={thumbnail}
                 alt={course.title}
+                onError={(e) => { e.target.src = DEFAULT_THUMBNAIL; }}
                 className="h-full w-full object-cover"
               />
             </div>
@@ -201,21 +211,23 @@ const CourseDetailPage = () => {
               <span className={`text-2xl font-bold ${parseFloat(course.price) === 0 ? 'text-emerald-600' : 'text-gray-900'}`}>
                 {parseFloat(course.price) === 0 ? 'Free' : `$${course.price}`}
               </span>
-              {enrolled && (
+              {enrolled && isStudent && (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                   Enrolled
                 </span>
               )}
             </div>
-            <button
-              onClick={handleEnroll}
-              disabled={enrolling}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {enrolling && <Spinner />}
-              {enrolling ? 'Processing...' : enrolled ? 'Continue Learning' : 'Enroll Now'}
-            </button>
+            {isStudent && (
+              <button
+                onClick={handleEnroll}
+                disabled={enrolling}
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {enrolling && <Spinner />}
+                {enrolling ? 'Processing...' : enrolled ? 'Continue Learning' : 'Enroll Now'}
+              </button>
+            )}
           </div>
         </div>
       </section>
@@ -285,11 +297,7 @@ const CourseDetailPage = () => {
             <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">Instructor</h2>
             <div className="flex items-center gap-3">
               {course.instructor_avatar ? (
-                <img
-                  src={course.instructor_avatar}
-                  alt={course.instructor_name}
-                  className="h-14 w-14 rounded-full object-cover"
-                />
+                <img src={course.instructor_avatar} alt={course.instructor_name} className="h-14 w-14 rounded-full object-cover" />
               ) : (
                 <span className="flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-lg font-semibold text-white">
                   {getInitials(course.instructor_name)}

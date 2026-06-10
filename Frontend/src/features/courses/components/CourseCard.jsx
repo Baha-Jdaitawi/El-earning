@@ -6,6 +6,16 @@ const LEVEL_STYLES = {
   advanced: 'bg-purple-100 text-purple-700',
 };
 
+const CATEGORY_THUMBNAILS = {
+  'Web Development': 'https://images.unsplash.com/photo-1593720213428-28a5b9e94613?w=800&q=80',
+  'Mobile Development': 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=800&q=80',
+  'Data Science': 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80',
+  'DevOps': 'https://images.unsplash.com/photo-1667372393119-3d4c48d07fc9?w=800&q=80',
+  'Design': 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&q=80',
+};
+
+const DEFAULT_THUMBNAIL = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80';
+
 const UsersIcon = () => (
   <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
     <circle cx={9} cy={8} r={3.2} stroke="currentColor" strokeWidth={1.8} />
@@ -15,15 +25,20 @@ const UsersIcon = () => (
 );
 
 const CourseCard = ({ course }) => {
+  const thumbnail = course.thumbnail ||
+    CATEGORY_THUMBNAILS[course.category_name] ||
+    DEFAULT_THUMBNAIL;
+
   return (
     <Link
       to={`/courses/${course.id}`}
       className="group flex flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-shadow"
     >
-      <div className="relative aspect-video overflow-hidden bg-gray-100">
+      <div className="relative aspect-video overflow-hidden">
         <img
-          src={course.thumbnail || '/placeholder.jpg'}
+          src={thumbnail}
           alt={course.title}
+          onError={(e) => { e.target.src = DEFAULT_THUMBNAIL; }}
           className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
         <span className="absolute left-3 top-3 inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
