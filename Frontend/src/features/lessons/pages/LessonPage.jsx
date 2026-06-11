@@ -278,6 +278,15 @@ const LessonPage = () => {
           <div className="border-b border-gray-100 px-5 py-4">
             <p className="text-xs font-medium uppercase tracking-wide text-gray-400">Course</p>
             <h2 className="text-sm font-semibold text-gray-900">{lesson.course_title}</h2>
+            <button
+              onClick={() => navigate(`/learn/${courseId}/chat`)}
+              className="mt-3 flex w-full items-center gap-2 rounded-lg bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-100"
+            >
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10Z" stroke="currentColor" strokeWidth={1.8} strokeLinejoin="round" />
+              </svg>
+              Course Chat
+            </button>
           </div>
           <nav className="flex flex-col gap-4 px-3 py-4">
             {modules.map((module, mIndex) => (
@@ -293,9 +302,8 @@ const LessonPage = () => {
                       <button
                         key={l.id}
                         onClick={() => navigate(`/learn/${courseId}/lesson/${l.id}`)}
-                        className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors text-left w-full ${
-                          isCurrent ? 'bg-indigo-50 font-medium text-indigo-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                        }`}
+                        className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors text-left w-full ${isCurrent ? 'bg-indigo-50 font-medium text-indigo-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                          }`}
                       >
                         <span className="flex-shrink-0">
                           {isCompleted
@@ -347,9 +355,8 @@ const LessonPage = () => {
               <button
                 onClick={handleComplete}
                 disabled={completing || isComplete}
-                className={`flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors disabled:cursor-not-allowed ${
-                  isComplete ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-70'
-                }`}
+                className={`flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors disabled:cursor-not-allowed ${isComplete ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-70'
+                  }`}
               >
                 {completing ? <><Spinner /> Saving...</> : isComplete ? <><CheckIcon /> Completed</> : 'Mark as Complete'}
               </button>

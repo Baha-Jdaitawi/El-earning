@@ -83,7 +83,6 @@ const CursorClickIcon = ({ className }) => (
   </svg>
 );
 
-// Inline form for adding/editing a module
 const ModuleForm = ({ initial = '', onSave, onCancel }) => {
   const [title, setTitle] = useState(initial);
 
@@ -97,13 +96,7 @@ const ModuleForm = ({ initial = '', onSave, onCancel }) => {
     <form onSubmit={handleSubmit} className="flex flex-col gap-3 rounded-xl border border-indigo-100 bg-indigo-50 p-4">
       <div className="flex flex-col gap-1.5">
         <label className={labelClasses}>Module Title</label>
-        <input
-          autoFocus
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="e.g. Introduction to JavaScript"
-          className={inputClasses}
-        />
+        <input autoFocus value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Introduction to JavaScript" className={inputClasses} />
       </div>
       <div className="flex justify-end gap-2">
         <button type="button" onClick={onCancel} className="rounded-lg border border-gray-200 bg-white px-3.5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
@@ -115,7 +108,6 @@ const ModuleForm = ({ initial = '', onSave, onCancel }) => {
   );
 };
 
-// Inline form for adding a lesson
 const LessonInlineForm = ({ onSave, onCancel }) => {
   const [title, setTitle] = useState('');
 
@@ -129,13 +121,7 @@ const LessonInlineForm = ({ onSave, onCancel }) => {
     <form onSubmit={handleSubmit} className="flex flex-col gap-3 rounded-lg border border-indigo-100 bg-indigo-50 p-3 mt-1">
       <div className="flex flex-col gap-1.5">
         <label className={labelClasses}>Lesson Title</label>
-        <input
-          autoFocus
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="e.g. Variables and Data Types"
-          className={inputClasses}
-        />
+        <input autoFocus value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Variables and Data Types" className={inputClasses} />
       </div>
       <div className="flex justify-end gap-2">
         <button type="button" onClick={onCancel} className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
@@ -248,13 +234,23 @@ const AssignmentForm = ({ onSave, onCancel }) => {
 };
 
 const LessonDetail = ({ lesson, onSaveLesson, onAddQuiz, onDeleteQuiz, onAddAssignment, onDeleteAssignment }) => {
-  const [form, setForm] = useState({ title: lesson.title, content: lesson.content || '', video_url: lesson.video_url || '', video_duration: lesson.video_duration || '' });
+  const [form, setForm] = useState({
+    title: lesson.title,
+    content: lesson.content || '',
+    video_url: lesson.video_url || '',
+    video_duration: lesson.video_duration || '',
+  });
   const [showQuizForm, setShowQuizForm] = useState(false);
   const [showAssignmentForm, setShowAssignmentForm] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setForm({ title: lesson.title, content: lesson.content || '', video_url: lesson.video_url || '', video_duration: lesson.video_duration || '' });
+    setForm({
+      title: lesson.title,
+      content: lesson.content || '',
+      video_url: lesson.video_url || '',
+      video_duration: lesson.video_duration || '',
+    });
   }, [lesson.id]);
 
   const handleSave = async (e) => {
@@ -262,6 +258,13 @@ const LessonDetail = ({ lesson, onSaveLesson, onAddQuiz, onDeleteQuiz, onAddAssi
     setSaving(true);
     await onSaveLesson(lesson.id, form);
     setSaving(false);
+  };
+
+  const durationInMinutes = form.video_duration ? Math.round(form.video_duration / 60) : '';
+
+  const handleDurationChange = (e) => {
+    const minutes = e.target.value;
+    setForm({ ...form, video_duration: minutes ? parseInt(minutes) * 60 : '' });
   };
 
   return (
@@ -283,8 +286,15 @@ const LessonDetail = ({ lesson, onSaveLesson, onAddQuiz, onDeleteQuiz, onAddAssi
               <input type="url" value={form.video_url} onChange={(e) => setForm({ ...form, video_url: e.target.value })} placeholder="https://..." className={inputClasses} />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className={labelClasses}>Video Duration (seconds)</label>
-              <input type="number" value={form.video_duration} onChange={(e) => setForm({ ...form, video_duration: e.target.value })} placeholder="e.g. 740" className={inputClasses} />
+              <label className={labelClasses}>Video Duration (minutes)</label>
+              <input
+                type="number"
+                min={0}
+                value={durationInMinutes}
+                onChange={handleDurationChange}
+                placeholder="e.g. 60"
+                className={inputClasses}
+              />
             </div>
           </div>
           <div className="flex justify-end">
@@ -386,12 +396,8 @@ const CourseBuilderPage = () => {
   const [selectedLesson, setSelectedLesson] = useState(null);
   const [dragIndex, setDragIndex] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
-
-  // Module form state
   const [showAddModule, setShowAddModule] = useState(false);
   const [editingModuleId, setEditingModuleId] = useState(null);
-
-  // Lesson inline form state — keyed by moduleId
   const [addingLessonTo, setAddingLessonTo] = useState(null);
 
   useEffect(() => { loadCourse(); }, [id]);
@@ -541,7 +547,6 @@ const CourseBuilderPage = () => {
 
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[360px_1fr] lg:px-8">
         <aside className="flex flex-col gap-3">
-
           {modules.map((module, index) => {
             const isExpanded = expandedModules[module.id];
             const isDragOver = dragOverIndex === index && dragIndex !== index;
@@ -554,7 +559,6 @@ const CourseBuilderPage = () => {
                 onDrop={() => handleDrop(index)}
                 className={`overflow-hidden rounded-xl border bg-white shadow-sm transition-colors ${isDragOver ? 'border-indigo-400 ring-2 ring-indigo-100' : 'border-gray-100'} ${dragIndex === index ? 'opacity-50' : ''}`}
               >
-                {/* Module header */}
                 {isEditing ? (
                   <div className="p-3">
                     <ModuleForm
@@ -587,7 +591,6 @@ const CourseBuilderPage = () => {
                   </div>
                 )}
 
-                {/* Lessons */}
                 {isExpanded && !isEditing && (
                   <div className="border-t border-gray-100 px-2 py-2">
                     <ul className="flex flex-col gap-1">
@@ -599,7 +602,7 @@ const CourseBuilderPage = () => {
                               <button onClick={() => setSelectedLesson(lesson)} className="flex min-w-0 flex-1 items-center gap-2 text-left">
                                 <PlayIcon className={`h-4 w-4 flex-shrink-0 ${isSelected ? 'text-indigo-600' : 'text-gray-400'}`} />
                                 <span className={`truncate text-sm ${isSelected ? 'font-medium text-indigo-700' : 'text-gray-700'}`}>{lesson.title}</span>
-                                {lesson.video_duration && (
+                                {lesson.video_duration > 0 && (
                                   <span className="flex flex-shrink-0 items-center gap-0.5 text-xs text-gray-400">
                                     <ClockIcon className="h-3 w-3" />
                                     {Math.floor(lesson.video_duration / 60)}m
@@ -617,7 +620,6 @@ const CourseBuilderPage = () => {
                       })}
                     </ul>
 
-                    {/* Add Lesson inline form */}
                     {addingLessonTo === module.id ? (
                       <LessonInlineForm
                         onSave={(title) => handleAddLesson(module.id, title)}
@@ -637,12 +639,8 @@ const CourseBuilderPage = () => {
             );
           })}
 
-          {/* Add Module inline form */}
           {showAddModule ? (
-            <ModuleForm
-              onSave={handleAddModule}
-              onCancel={() => setShowAddModule(false)}
-            />
+            <ModuleForm onSave={handleAddModule} onCancel={() => setShowAddModule(false)} />
           ) : (
             <button
               onClick={() => { setShowAddModule(true); setEditingModuleId(null); setAddingLessonTo(null); }}
@@ -651,7 +649,6 @@ const CourseBuilderPage = () => {
               <PlusIcon className="h-4 w-4" /> Add Module
             </button>
           )}
-
         </aside>
 
         <main>

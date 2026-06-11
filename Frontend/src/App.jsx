@@ -1,7 +1,9 @@
+
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getMe } from './store/slices/authSlice.js';
+import { initSocket, disconnectSocket } from './lib/socket.js';
 import Navbar from './shared/components/Navbar.jsx';
 import Sidebar from './shared/components/Sidebar.jsx';
 import ProtectedRoute from './shared/components/ProtectedRoute.jsx';
@@ -28,7 +30,9 @@ import LessonPage from './features/lessons/pages/LessonPage.jsx';
 import AssignmentsPage from './features/assignments/pages/AssignmentsPage.jsx';
 import CourseBuilderPage from './features/courses/pages/CourseBuilderPage.jsx';
 
-
+import CourseChatPage from './features/chat/pages/CourseChatPage.jsx';
+import DirectChatPage from './features/chat/pages/DirectChatPage.jsx';
+import InboxPage from './features/chat/pages/InboxPage.jsx';
 
 const PublicLayout = () => (
   <div className="min-h-screen bg-gray-50">
@@ -78,11 +82,19 @@ const AuthLayout = () => (
 
 const App = () => {
   const dispatch = useDispatch();
-  const { loading } = useSelector((state) => state.auth);
+  const { loading, user } = useSelector((state) => state.auth);
 
   useEffect(() => {
     dispatch(getMe());
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      initSocket();
+    } else {
+      disconnectSocket();
+    }
+  }, [user]);
 
   if (loading) {
     return (
@@ -112,6 +124,9 @@ const App = () => {
           <Route path="/assignments" element={<AssignmentsPage />} />
           <Route path="/progress" element={<StudentProgressPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/messages" element={<InboxPage />} />
+          <Route path="/messages/:userId" element={<DirectChatPage />} />
+          <Route path="/learn/:courseId/chat" element={<CourseChatPage />} />
         </Route>
 
         {/* Lesson fullscreen */}
@@ -123,12 +138,15 @@ const App = () => {
         <Route element={<InstructorLayout />}>
           <Route path="/instructor/dashboard" element={<InstructorDashboard />} />
           <Route path="/instructor/courses" element={<CoursesPage />} />
-          <Route path="/instructor/courses/:id/builder" element={<CourseBuilderPage />}/>
+          <Route path="/instructor/courses/:id/builder" element={<CourseBuilderPage />} />
           <Route path="/instructor/courses/create" element={<CreateCoursePage />} />
           <Route path="/instructor/courses/:id/edit" element={<EditCoursePage />} />
           <Route path="/instructor/submissions" element={<InstructorSubmissionsPage />} />
           <Route path="/instructor/profile" element={<ProfilePage />} />
-         </Route>
+          <Route path="/instructor/messages" element={<InboxPage />} />
+          <Route path="/instructor/messages/:userId" element={<DirectChatPage />} />
+          <Route path="/instructor/courses/:courseId/chat" element={<CourseChatPage />} />
+        </Route>
 
         {/* Admin */}
         <Route element={<AdminLayout />}>
@@ -137,6 +155,8 @@ const App = () => {
           <Route path="/admin/courses" element={<CoursesPage />} />
           <Route path="/admin/categories" element={<AdminCategoriesPage />} />
           <Route path="/admin/profile" element={<ProfilePage />} />
+          <Route path="/admin/messages" element={<InboxPage />} />
+          <Route path="/admin/messages/:userId" element={<DirectChatPage />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />
