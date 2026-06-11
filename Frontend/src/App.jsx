@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -25,6 +24,7 @@ import AdminUsersPage from './features/dashboard/pages/AdminUsersPage.jsx';
 import AdminCategoriesPage from './features/dashboard/pages/AdminCategoriesPage.jsx';
 import InstructorSubmissionsPage from './features/dashboard/pages/InstructorSubmissionsPage.jsx';
 import StudentProgressPage from './features/dashboard/pages/StudentProgressPage.jsx';
+import CourseStudentsPage from './features/dashboard/pages/CourseStudentsPage.jsx';
 
 import LessonPage from './features/lessons/pages/LessonPage.jsx';
 import AssignmentsPage from './features/assignments/pages/AssignmentsPage.jsx';
@@ -146,6 +146,7 @@ const App = () => {
           <Route path="/instructor/messages" element={<InboxPage />} />
           <Route path="/instructor/messages/:userId" element={<DirectChatPage />} />
           <Route path="/instructor/courses/:courseId/chat" element={<CourseChatPage />} />
+          <Route path="/instructor/courses/:courseId/students" element={<CourseStudentsPage />} />
         </Route>
 
         {/* Admin */}

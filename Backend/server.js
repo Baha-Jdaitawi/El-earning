@@ -14,6 +14,7 @@ import jwt from 'jsonwebtoken';
 import { testConnection } from './config/db.js';
 import { findUserByGoogleId, findUserByEmail, createUser, updateUser, updateLastLogin, findUserById } from './models/userModel.js';
 import { createMessage, deleteMessage, clearCourseChat } from './models/messageModel.js';
+import { createNotification } from './models/notificationModel.js';
 import { isEnrolled } from './models/enrollmentModel.js';
 import routes from './routes/index.js';
 
@@ -28,6 +29,9 @@ const io = new Server(httpServer, {
     credentials: true,
   },
 });
+
+// Store connected users: userId -> socketId
+const connectedUsers = new Map();
 
 // Security
 app.use(helmet());
@@ -95,6 +99,20 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   }));
 }
 
+// Helper to send notification to a user
+export const sendNotification = async (user_id, { type, title, message, link }) => {
+  try {
+    const notification = await createNotification({ user_id, type, title, message, link });
+    const socketId = connectedUsers.get(user_id);
+    if (socketId) {
+      io.to(socketId).emit('new_notification', notification);
+    }
+    return notification;
+  } catch (err) {
+    console.error('Failed to send notification:', err);
+  }
+};
+
 // Socket.io authentication middleware
 io.use(async (socket, next) => {
   try {
@@ -116,6 +134,9 @@ io.use(async (socket, next) => {
 io.on('connection', (socket) => {
   const user = socket.user;
   console.log(`Socket connected: ${user.name} (${user.role})`);
+
+  // Track connected users
+  connectedUsers.set(user.id, socket.id);
 
   // Join course chat room
   socket.on('join_course', async (course_id) => {
@@ -191,6 +212,14 @@ io.on('connection', (socket) => {
 
       const roomId = [user.id, parseInt(receiver_id)].sort().join('_');
       io.to(`direct_${roomId}`).emit('new_direct_message', fullMessage);
+
+      // Send notification to receiver
+      await sendNotification(parseInt(receiver_id), {
+        type: 'direct_message',
+        title: 'New Message',
+        message: `${user.name}: ${content.trim().substring(0, 50)}${content.length > 50 ? '...' : ''}`,
+        link: `/messages/${user.id}`,
+      });
     } catch (err) {
       console.error(err);
     }
@@ -224,6 +253,7 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log(`Socket disconnected: ${user.name}`);
+    connectedUsers.delete(user.id);
   });
 });
 

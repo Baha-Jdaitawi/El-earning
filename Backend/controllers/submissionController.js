@@ -12,6 +12,7 @@ import {
 } from '../models/submissionModel.js';
 import { getAssignmentById } from '../models/assignmentModel.js';
 import { isEnrolled } from '../models/enrollmentModel.js';
+import { sendNotification } from '../server.js';
 
 export const submitAssignment = async (req, res) => {
   try {
@@ -32,6 +33,15 @@ export const submitAssignment = async (req, res) => {
     if (existing) return res.status(409).json({ success: false, message: 'You already submitted this assignment' });
 
     const submission = await createSubmission({ assignment_id: parseInt(assignment_id), student_id: user_id, content, file_path });
+
+    // Notify instructor
+    await sendNotification(assignment.instructor_id, {
+      type: 'new_submission',
+      title: 'New Assignment Submission',
+      message: `${req.user.name} submitted "${assignment.title}"`,
+      link: '/instructor/submissions',
+    });
+
     res.status(201).json({ success: true, message: 'Assignment submitted', data: submission });
   } catch (err) {
     if (err.message.includes('Late submissions are not allowed')) {
@@ -143,6 +153,15 @@ export const gradeSubmissionHandler = async (req, res) => {
     }
 
     const graded = await gradeSubmission(id, { grade, feedback }, req.user.id);
+
+    // Notify student
+    await sendNotification(submission.student_id, {
+      type: 'assignment_graded',
+      title: 'Assignment Graded',
+      message: `Your submission for "${submission.assignment_title}" received a grade of ${grade}/100`,
+      link: '/assignments',
+    });
+
     res.json({ success: true, message: 'Submission graded', data: graded });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

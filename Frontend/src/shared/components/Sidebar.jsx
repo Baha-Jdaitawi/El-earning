@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import useAuth from '../../features/auth/hooks/useAuth.js';
+import NotificationDropdown from '../../features/notifications/components/NotificationDropdown.jsx';
 
 const ChatIcon = () => (
   <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
@@ -55,7 +56,8 @@ const SidebarContent = ({ user, navItems, onLogout, onNavigate }) => {
             <path d="M6 11.5V16c0 .8 2.7 2.5 6 2.5s6-1.7 6-2.5v-4.5" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </span>
-        <span className="text-lg font-bold tracking-tight text-gray-900">LearnHub</span>
+        <span className="flex-1 text-lg font-bold tracking-tight text-gray-900">LearnHub</span>
+        <NotificationDropdown />
       </div>
 
       {/* Nav */}
@@ -137,14 +139,17 @@ const Sidebar = () => {
           </span>
           <span className="text-base font-bold tracking-tight text-gray-900">LearnHub</span>
         </div>
-        <button
-          onClick={() => setOpen(true)}
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100"
-        >
-          <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none">
-            <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" />
-          </svg>
-        </button>
+        <div className="flex items-center gap-2">
+          <NotificationDropdown />
+          <button
+            onClick={() => setOpen(true)}
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-600 hover:bg-gray-100"
+          >
+            <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none">
+              <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Desktop sidebar */}

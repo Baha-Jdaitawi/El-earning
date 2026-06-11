@@ -36,14 +36,18 @@ export const getAllCourses = async ({ page = 1, limit = 10, category_id, level, 
   if (instructor_id) { conditions.push(`c.instructor_id = $${i++}`); values.push(instructor_id); }
   if (is_published !== undefined && is_published !== null) { conditions.push(`c.is_published = $${i++}`); values.push(is_published); }
   if (search) {
-    conditions.push(`(LOWER(c.title) LIKE $${i} OR LOWER(c.description) LIKE $${i})`);
+    conditions.push(`(LOWER(c.title) LIKE $${i} OR LOWER(c.description) LIKE $${i} OR LOWER(u.name) LIKE $${i})`);
     values.push(`%${search.toLowerCase()}%`);
     i++;
   }
 
   const where = conditions.join(' AND ');
-
-  const countResult = await query(`SELECT COUNT(*) FROM courses c WHERE ${where}`, values);
+const countResult = await query(
+    `SELECT COUNT(*) FROM courses c
+     LEFT JOIN users u ON c.instructor_id = u.id
+     WHERE ${where}`,
+    values
+  );
   const total = parseInt(countResult.rows[0].count);
 
   const result = await query(

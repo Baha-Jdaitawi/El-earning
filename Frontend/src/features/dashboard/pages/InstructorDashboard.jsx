@@ -17,8 +17,8 @@ const GlobeIcon = () => (
   </svg>
 );
 
-const UsersIcon = () => (
-  <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none">
+const UsersIcon = ({ className }) => (
+  <svg className={className || 'h-6 w-6'} viewBox="0 0 24 24" fill="none">
     <circle cx={9} cy={8} r={3.2} stroke="currentColor" strokeWidth={1.8} />
     <path d="M3.5 19a5.5 5.5 0 0 1 11 0" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" />
     <path d="M16 5.2a3.2 3.2 0 0 1 0 5.6M17.5 19a5.5 5.5 0 0 0-3-4.9" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" />
@@ -202,6 +202,12 @@ const InstructorDashboard = () => {
                               <BuilderIcon /> Manage
                             </button>
                             <button
+                              onClick={() => navigate(`/instructor/courses/${course.id}/students`)}
+                              className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 hover:text-indigo-700"
+                            >
+                              <UsersIcon className="h-4 w-4" /> Students
+                            </button>
+                            <button
                               onClick={() => navigate(`/instructor/courses/${course.id}/edit`)}
                               className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 hover:text-indigo-700"
                             >
@@ -244,12 +250,18 @@ const InstructorDashboard = () => {
                       </span>
                       <span className="text-xs text-gray-500">{parseInt(course.enrolled_students || 0)} students</span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <button
                         onClick={() => navigate(`/instructor/courses/${course.id}/builder`)}
                         className="inline-flex items-center gap-1.5 rounded-md border border-indigo-200 bg-indigo-50 px-2.5 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100"
                       >
                         <BuilderIcon /> Manage
+                      </button>
+                      <button
+                        onClick={() => navigate(`/instructor/courses/${course.id}/students`)}
+                        className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                      >
+                        <UsersIcon className="h-4 w-4" /> Students
                       </button>
                       <button
                         onClick={() => navigate(`/instructor/courses/${course.id}/edit`)}
