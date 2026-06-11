@@ -13,6 +13,8 @@ import submissionRoutes from './submission.routes.js';
 import reviewRoutes from './review.routes.js';
 import messageRoutes from './message.routes.js';
 import notificationRoutes from './notification.routes.js';
+import wishlistRoutes from './wishlist.routes.js';
+
 
 
 const router = express.Router();
@@ -31,6 +33,6 @@ router.use('/submissions', submissionRoutes);
 router.use('/reviews', reviewRoutes);
 router.use('/messages', messageRoutes);
 router.use('/notifications', notificationRoutes);
-
+router.use('/wishlist', wishlistRoutes);
 
 export default router;

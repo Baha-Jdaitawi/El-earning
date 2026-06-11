@@ -34,6 +34,8 @@ import CourseChatPage from './features/chat/pages/CourseChatPage.jsx';
 import DirectChatPage from './features/chat/pages/DirectChatPage.jsx';
 import InboxPage from './features/chat/pages/InboxPage.jsx';
 
+import WishlistPage from './features/wishlist/pages/WishlistPage.jsx';
+
 const PublicLayout = () => (
   <div className="min-h-screen bg-gray-50">
     <Navbar />
@@ -127,6 +129,7 @@ const App = () => {
           <Route path="/messages" element={<InboxPage />} />
           <Route path="/messages/:userId" element={<DirectChatPage />} />
           <Route path="/learn/:courseId/chat" element={<CourseChatPage />} />
+          <Route path="/wishlist" element={<WishlistPage />} />
         </Route>
 
         {/* Lesson fullscreen */}

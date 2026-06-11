@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import WishlistButton from '../../wishlist/components/WishlistButton.jsx';
 
 const LEVEL_STYLES = {
   beginner: 'bg-emerald-100 text-emerald-700',
@@ -25,6 +27,7 @@ const UsersIcon = () => (
 );
 
 const CourseCard = ({ course }) => {
+  const { user } = useSelector((state) => state.auth);
   const thumbnail = course.thumbnail ||
     CATEGORY_THUMBNAILS[course.category_name] ||
     DEFAULT_THUMBNAIL;
@@ -44,6 +47,11 @@ const CourseCard = ({ course }) => {
         <span className="absolute left-3 top-3 inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
           {course.category_name}
         </span>
+        {user?.role === 'student' && (
+          <span className="absolute right-2 top-2">
+            <WishlistButton courseId={course.id} />
+          </span>
+        )}
       </div>
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div className="flex-1">
