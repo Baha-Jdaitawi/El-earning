@@ -14,7 +14,7 @@ const BellIcon = ({ hasUnread }) => (
     <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none">
       <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
     </svg>
-    {hasUnread && (
+    {hasUnread > 0 && (
       <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-xs font-bold text-white">
         {hasUnread > 9 ? '9+' : hasUnread}
       </span>
@@ -26,6 +26,7 @@ const NOTIFICATION_ICONS = {
   assignment_graded: { bg: 'bg-emerald-100', text: 'text-emerald-600', icon: '✓' },
   new_submission: { bg: 'bg-indigo-100', text: 'text-indigo-600', icon: '📝' },
   direct_message: { bg: 'bg-sky-100', text: 'text-sky-600', icon: '💬' },
+  announcement: { bg: 'bg-amber-100', text: 'text-amber-600', icon: '📢' },
   default: { bg: 'bg-gray-100', text: 'text-gray-600', icon: '🔔' },
 };
 

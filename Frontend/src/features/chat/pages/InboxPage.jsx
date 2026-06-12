@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { getContactsApi } from '../api/chatApi.js';
 
 const getInitials = (name) =>
@@ -30,8 +30,15 @@ const Spinner = () => (
 
 const InboxPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const base = location.pathname.startsWith('/instructor')
+    ? '/instructor/messages'
+    : location.pathname.startsWith('/admin')
+      ? '/admin/messages'
+      : '/messages';
 
   useEffect(() => {
     getContactsApi()
@@ -63,7 +70,7 @@ const InboxPage = () => {
               {contacts.map((contact) => (
                 <li key={contact.contact_id}>
                   <button
-                    onClick={() => navigate(`/messages/${contact.contact_id}`)}
+                    onClick={() => navigate(`${base}/${contact.contact_id}`)}
                     className="flex w-full items-center gap-4 px-5 py-4 text-left hover:bg-gray-50 transition-colors"
                   >
                     <div className="relative flex-shrink-0">

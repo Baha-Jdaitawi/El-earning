@@ -6,6 +6,7 @@ import { getQuizzesApi } from '../../quizzes/api/quizzesApi.js';
 import { submitQuizService } from '../../quizzes/services/quizService.js';
 import QuizForm from '../../quizzes/components/QuizForm.jsx';
 import QuizResults from '../../quizzes/components/QuizResults.jsx';
+import CourseAssistant from '../../ai/components/CourseAssistant.jsx';
 import api from '../../../lib/axios.js';
 
 const CheckIcon = () => (
@@ -54,7 +55,6 @@ const formatDuration = (seconds) => {
   return `${m}:${s.toString().padStart(2, '0')}`;
 };
 
-// Assignment submission form
 const AssignmentSubmitForm = ({ assignment, onSubmit, submitting }) => {
   const [open, setOpen] = useState(false);
   const [content, setContent] = useState('');
@@ -154,7 +154,6 @@ const LessonPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [assignmentSubmitting, setAssignmentSubmitting] = useState(false);
   const [result, setResult] = useState(null);
-  const [previousAttempt, setPreviousAttempt] = useState(null);
 
   useEffect(() => {
     loadLesson();
@@ -165,25 +164,13 @@ const LessonPage = () => {
     try {
       const res = await getLessonApi(parseInt(lessonId));
       setLesson(res.data.data);
-
-      // Load quizzes
       const quizRes = await getQuizzesApi(parseInt(lessonId));
       setQuizzes(quizRes.data.data || []);
       setResult(null);
-
-      // Load assignments
       const assignRes = await api.get(`/assignments/lesson/${lessonId}`);
       setAssignments(assignRes.data.data || []);
-
-      // Load existing submissions for this lesson's assignments
       const subRes = await api.get('/submissions/my').catch(() => ({ data: { data: [] } }));
       setExistingSubmissions(subRes.data.data || []);
-
-      // Check for previous quiz attempt
-      const attemptRes = await api.get(`/quizzes/lesson/${lessonId}/attempt`).catch(() => null);
-      if (attemptRes?.data?.data) {
-        setPreviousAttempt(attemptRes.data.data);
-      }
     } catch (err) {
       console.error(err);
     }
@@ -193,17 +180,14 @@ const LessonPage = () => {
     try {
       const res = await getModulesApi(parseInt(courseId));
       const modulesData = res.data.data || [];
-
       const modulesWithLessons = await Promise.all(
         modulesData.map(async (m) => {
           const lessonRes = await api.get(`/lessons/module/${m.id}`);
           return { ...m, lessons: lessonRes.data.data || [] };
         })
       );
-
       setModules(modulesWithLessons);
       setAllLessons(modulesWithLessons.flatMap((m) => m.lessons));
-
       const progressRes = await api.get(`/progress/course/${courseId}`);
       const progressData = progressRes.data.data?.lessons || [];
       const progressMap = {};
@@ -302,8 +286,9 @@ const LessonPage = () => {
                       <button
                         key={l.id}
                         onClick={() => navigate(`/learn/${courseId}/lesson/${l.id}`)}
-                        className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors text-left w-full ${isCurrent ? 'bg-indigo-50 font-medium text-indigo-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                          }`}
+                        className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors text-left w-full ${
+                          isCurrent ? 'bg-indigo-50 font-medium text-indigo-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        }`}
                       >
                         <span className="flex-shrink-0">
                           {isCompleted
@@ -355,8 +340,9 @@ const LessonPage = () => {
               <button
                 onClick={handleComplete}
                 disabled={completing || isComplete}
-                className={`flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors disabled:cursor-not-allowed ${isComplete ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-70'
-                  }`}
+                className={`flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors disabled:cursor-not-allowed ${
+                  isComplete ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-70'
+                }`}
               >
                 {completing ? <><Spinner /> Saving...</> : isComplete ? <><CheckIcon /> Completed</> : 'Mark as Complete'}
               </button>
@@ -368,6 +354,14 @@ const LessonPage = () => {
                 <p className="leading-relaxed text-gray-700 whitespace-pre-wrap">{lesson.content}</p>
               </article>
             )}
+
+            {/* AI Course Assistant */}
+            <div className="mt-8 border-t border-gray-100 pt-8">
+              <CourseAssistant
+                courseTitle={lesson.course_title}
+                lessonContent={lesson.content}
+              />
+            </div>
 
             {/* Assignments */}
             {assignments.length > 0 && (
@@ -430,16 +424,9 @@ const LessonPage = () => {
             </div>
             <div className="px-5 py-5">
               {result ? (
-                <QuizResults
-                  result={result}
-                  onRetake={() => setResult(null)}
-                />
+                <QuizResults result={result} onRetake={() => setResult(null)} />
               ) : (
-                <QuizForm
-                  quizzes={quizzes}
-                  onSubmit={handleSubmitQuiz}
-                  submitting={submitting}
-                />
+                <QuizForm quizzes={quizzes} onSubmit={handleSubmitQuiz} submitting={submitting} />
               )}
             </div>
           </aside>

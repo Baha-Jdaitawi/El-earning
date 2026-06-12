@@ -6,6 +6,9 @@ import { enroll, fetchEnrollmentStatus } from '../../../store/slices/enrollmentS
 import { getReviewsService, getMyReviewService, createReviewService, updateReviewService } from '../../reviews/services/reviewService.js';
 import ReviewForm from '../../reviews/components/ReviewForm.jsx';
 import ReviewList from '../../reviews/components/ReviewList.jsx';
+import useAnnouncements from '../../announcements/hooks/useAnnouncements.js';
+import AnnouncementList from '../../announcements/components/AnnouncementList.jsx';
+import AnnouncementForm from '../../announcements/components/AnnouncementForm.jsx';
 
 const CATEGORY_THUMBNAILS = {
   'Web Development': 'https://images.unsplash.com/photo-1593720213428-28a5b9e94613?w=800&q=80',
@@ -115,6 +118,11 @@ const CourseDetailPage = () => {
   const [myReview, setMyReview] = useState(null);
   const [reviewLoading, setReviewLoading] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [showAnnouncementForm, setShowAnnouncementForm] = useState(false);
+  const [editingAnnouncement, setEditingAnnouncement] = useState(null);
+  const [announcementLoading, setAnnouncementLoading] = useState(false);
+
+  const { announcements, loading: announcementsLoading, createAnnouncement, updateAnnouncement, deleteAnnouncement } = useAnnouncements(id);
 
   const enrolled = status?.enrolled || false;
   const isStudent = !user || user.role === 'student';
@@ -191,6 +199,32 @@ const CourseDetailPage = () => {
       console.error(err);
     }
     setReviewLoading(false);
+  };
+
+  const handleAnnouncementSubmit = async (data) => {
+    setAnnouncementLoading(true);
+    try {
+      if (editingAnnouncement) {
+        await updateAnnouncement(editingAnnouncement.id, data);
+      } else {
+        await createAnnouncement(data);
+      }
+      setShowAnnouncementForm(false);
+      setEditingAnnouncement(null);
+    } catch (err) {
+      console.error(err);
+    }
+    setAnnouncementLoading(false);
+  };
+
+  const handleEditAnnouncement = (announcement) => {
+    setEditingAnnouncement(announcement);
+    setShowAnnouncementForm(true);
+  };
+
+  const handleDeleteAnnouncement = async (announcementId) => {
+    if (!window.confirm('Delete this announcement?')) return;
+    await deleteAnnouncement(announcementId);
   };
 
   const totalLessons = modules.reduce((sum, m) => sum + parseInt(m.lesson_count || 0), 0);
@@ -288,6 +322,49 @@ const CourseDetailPage = () => {
           <StatItem Icon={LevelIcon} label="Level" value={course.level} />
         </div>
       </section>
+
+      {/* Announcements */}
+      {(announcements.length > 0 || user?.role === 'instructor' || user?.role === 'admin') && (
+        <section className="border-b border-gray-100 bg-white">
+          <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Announcements
+                {announcements.length > 0 && (
+                  <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                    {announcements.length}
+                  </span>
+                )}
+              </h2>
+              {(user?.role === 'instructor' || user?.role === 'admin') && !showAnnouncementForm && (
+                <button
+                  onClick={() => { setShowAnnouncementForm(true); setEditingAnnouncement(null); }}
+                  className="inline-flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white hover:bg-amber-600"
+                >
+                  + New Announcement
+                </button>
+              )}
+            </div>
+            {showAnnouncementForm && (
+              <div className="mb-4">
+                <AnnouncementForm
+                  onSubmit={handleAnnouncementSubmit}
+                  onCancel={() => { setShowAnnouncementForm(false); setEditingAnnouncement(null); }}
+                  loading={announcementLoading}
+                  initialData={editingAnnouncement}
+                />
+              </div>
+            )}
+            <AnnouncementList
+              announcements={announcements}
+              loading={announcementsLoading}
+              onEdit={handleEditAnnouncement}
+              onDelete={handleDeleteAnnouncement}
+              canManage={user?.role === 'instructor' || user?.role === 'admin'}
+            />
+          </div>
+        </section>
+      )}
 
       {/* Modules + Sidebar */}
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-10 sm:px-6 lg:grid-cols-3 lg:px-8">

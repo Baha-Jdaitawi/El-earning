@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../../../lib/axios.js';
+import AIQuizGenerator from '../../ai/components/AIQuizGenerator.jsx';
 
 const inputClasses = 'w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100';
 const labelClasses = 'text-sm font-medium text-gray-700';
@@ -85,13 +86,11 @@ const CursorClickIcon = ({ className }) => (
 
 const ModuleForm = ({ initial = '', onSave, onCancel }) => {
   const [title, setTitle] = useState(initial);
-
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!title.trim()) return;
     onSave(title.trim());
   };
-
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3 rounded-xl border border-indigo-100 bg-indigo-50 p-4">
       <div className="flex flex-col gap-1.5">
@@ -110,13 +109,11 @@ const ModuleForm = ({ initial = '', onSave, onCancel }) => {
 
 const LessonInlineForm = ({ onSave, onCancel }) => {
   const [title, setTitle] = useState('');
-
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!title.trim()) return;
     onSave(title.trim());
   };
-
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3 rounded-lg border border-indigo-100 bg-indigo-50 p-3 mt-1">
       <div className="flex flex-col gap-1.5">
@@ -287,14 +284,7 @@ const LessonDetail = ({ lesson, onSaveLesson, onAddQuiz, onDeleteQuiz, onAddAssi
             </div>
             <div className="flex flex-col gap-1.5">
               <label className={labelClasses}>Video Duration (minutes)</label>
-              <input
-                type="number"
-                min={0}
-                value={durationInMinutes}
-                onChange={handleDurationChange}
-                placeholder="e.g. 60"
-                className={inputClasses}
-              />
+              <input type="number" min={0} value={durationInMinutes} onChange={handleDurationChange} placeholder="e.g. 60" className={inputClasses} />
             </div>
           </div>
           <div className="flex justify-end">
@@ -342,6 +332,9 @@ const LessonDetail = ({ lesson, onSaveLesson, onAddQuiz, onDeleteQuiz, onAddAssi
           {showQuizForm && (
             <QuizForm onSave={(q) => { onAddQuiz(q); setShowQuizForm(false); }} onCancel={() => setShowQuizForm(false)} />
           )}
+
+          {/* AI Quiz Generator */}
+          <AIQuizGenerator onSaveQuiz={onAddQuiz} />
         </div>
       </section>
 

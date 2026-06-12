@@ -14,8 +14,8 @@ import reviewRoutes from './review.routes.js';
 import messageRoutes from './message.routes.js';
 import notificationRoutes from './notification.routes.js';
 import wishlistRoutes from './wishlist.routes.js';
-
-
+import announcementRoutes from './announcement.routes.js';
+import aiRoutes from './ai.routes.js';
 
 const router = express.Router();
 
@@ -34,5 +34,8 @@ router.use('/reviews', reviewRoutes);
 router.use('/messages', messageRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/wishlist', wishlistRoutes);
+router.use('/announcements', announcementRoutes);
+router.use('/ai', aiRoutes);
+
 
 export default router;

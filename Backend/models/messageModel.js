@@ -60,21 +60,25 @@ export const getUnreadCount = async (user_id) => {
 
 export const getDirectMessageContacts = async (user_id) => {
   const result = await query(
-    `SELECT DISTINCT
-       CASE WHEN m.sender_id = $1 THEN m.receiver_id ELSE m.sender_id END as contact_id,
+    `SELECT
+       contact_id,
        u.name as contact_name,
        u.avatar as contact_avatar,
        u.role as contact_role,
-       MAX(m.created_at) as last_message_at,
-       (SELECT content FROM messages 
-        WHERE (sender_id = $1 AND receiver_id = u.id) OR (sender_id = u.id AND receiver_id = $1)
-        AND course_id IS NULL
-        ORDER BY created_at DESC LIMIT 1) as last_message,
-       COUNT(CASE WHEN m.receiver_id = $1 AND m.is_read = FALSE THEN 1 END) as unread_count
-     FROM messages m
-     JOIN users u ON u.id = CASE WHEN m.sender_id = $1 THEN m.receiver_id ELSE m.sender_id END
-     WHERE (m.sender_id = $1 OR m.receiver_id = $1) AND m.course_id IS NULL
-     GROUP BY contact_id, u.name, u.avatar, u.role
+       last_message_at,
+       last_message,
+       unread_count
+     FROM (
+       SELECT
+         CASE WHEN m.sender_id = $1 THEN m.receiver_id ELSE m.sender_id END as contact_id,
+         MAX(m.created_at) as last_message_at,
+         (array_agg(m.content ORDER BY m.created_at DESC))[1] as last_message,
+         COUNT(CASE WHEN m.receiver_id = $1 AND m.is_read = FALSE THEN 1 END) as unread_count
+       FROM messages m
+       WHERE (m.sender_id = $1 OR m.receiver_id = $1) AND m.course_id IS NULL
+       GROUP BY contact_id
+     ) contacts
+     JOIN users u ON u.id = contacts.contact_id
      ORDER BY last_message_at DESC`,
     [user_id]
   );

@@ -67,6 +67,12 @@ const TrashIcon = () => (
   </svg>
 );
 
+const ChatIcon = () => (
+  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10Z" stroke="currentColor" strokeWidth={1.8} strokeLinejoin="round" />
+  </svg>
+);
+
 const CATEGORY_STYLES = {
   'Web Development': 'bg-indigo-100 text-indigo-700',
   'Data Science': 'bg-teal-100 text-teal-700',
@@ -208,6 +214,12 @@ const InstructorDashboard = () => {
                               <UsersIcon className="h-4 w-4" /> Students
                             </button>
                             <button
+                              onClick={() => navigate(`/instructor/courses/${course.id}/chat`)}
+                              className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 hover:text-indigo-700"
+                            >
+                              <ChatIcon /> Chat
+                            </button>
+                            <button
                               onClick={() => navigate(`/instructor/courses/${course.id}/edit`)}
                               className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 hover:text-indigo-700"
                             >
@@ -262,6 +274,12 @@ const InstructorDashboard = () => {
                         className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
                       >
                         <UsersIcon className="h-4 w-4" /> Students
+                      </button>
+                      <button
+                        onClick={() => navigate(`/instructor/courses/${course.id}/chat`)}
+                        className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                      >
+                        <ChatIcon /> Chat
                       </button>
                       <button
                         onClick={() => navigate(`/instructor/courses/${course.id}/edit`)}
