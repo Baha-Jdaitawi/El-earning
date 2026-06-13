@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import useAuth from '../../features/auth/hooks/useAuth.js';
 
 const NAV_LINKS = [
-  { label: 'Home', href: '/' },
+  
   { label: 'Courses', href: '/courses' },
   { label: 'Dashboard', href: '/dashboard' },
 ];
