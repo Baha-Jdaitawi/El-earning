@@ -2,6 +2,12 @@
 
 A full-stack LMS with role-based access for students, instructors, and admins. Built with real-time communication, AI-powered features, and a clean modern UI.
 
+## Live Demo
+
+**Frontend:** https://updated-elearning.vercel.app  
+**Backend API:** https://updatedelearning-production.up.railway.app/api
+
+
 ## Tech Stack
 
 **Frontend:** React, Redux Toolkit, Tailwind CSS, Vite  
