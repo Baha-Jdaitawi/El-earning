@@ -51,16 +51,34 @@ const NotificationDropdown = () => {
   const [loading, setLoading] = useState(false);
   const dropdownRef = useRef(null);
 
+  const getDropdownStyle = () => {
+    if (window.innerWidth >= 1024) {
+      return {
+        position: 'absolute',
+        width: 320,
+        left: 0,
+        right: 'auto',
+        transform: 'none',
+      };
+    }
+    return {
+      position: 'fixed',
+      top: 56,
+      left: 8,
+      right: 8,
+      width: 'auto',
+      transform: 'none',
+    };
+  };
+
   useEffect(() => {
     loadUnreadCount();
-
     onSocketReady((socket) => {
       socket.on('new_notification', (notification) => {
         setNotifications((prev) => [notification, ...prev]);
         setUnreadCount((prev) => prev + 1);
       });
     });
-
     return () => {
       const socket = getSocket();
       socket?.off('new_notification');
@@ -138,7 +156,10 @@ const NotificationDropdown = () => {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl">
+        <div
+          className="z-50 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl"
+          style={getDropdownStyle()}
+        >
           <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
             <h3 className="text-sm font-semibold text-gray-900">Notifications</h3>
             {unreadCount > 0 && (
@@ -162,7 +183,7 @@ const NotificationDropdown = () => {
             ) : notifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 text-center">
                 <p className="text-sm font-medium text-gray-900">No notifications</p>
-                <p className="mt-1 text-xs text-gray-500">You're all caught up!</p>
+                <p className="mt-1 text-xs text-gray-500">You&#x2019;re all caught up!</p>
               </div>
             ) : (
               <ul className="divide-y divide-gray-100">

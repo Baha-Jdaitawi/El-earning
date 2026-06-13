@@ -19,15 +19,38 @@ const GoogleIcon = () => (
   </svg>
 );
 
+const CheckIcon = () => (
+  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
+    <path d="m5 12 4.5 4.5L19 7" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const XIcon = () => (
+  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
+    <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" />
+  </svg>
+);
+
 const ROLE_OPTIONS = [
   { value: 'student', label: 'Student', description: 'Enroll and learn' },
   { value: 'instructor', label: 'Instructor', description: 'Create and teach' },
 ];
 
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+const BLOCKED_DOMAINS = new Set([
+  'learnhub.com', 'test.com', 'example.com', 'fake.com', 'demo.com',
+  'sample.com', 'placeholder.com', 'dummy.com', 'invalid.com', 'nowhere.com',
+  'mailinator.com', 'guerrillamail.com', 'tempmail.com', 'throwaway.com',
+  'yopmail.com', 'sharklasers.com', 'trashmail.com', 'dispostable.com',
+  'maildrop.cc', 'spam4.me', 'trashmail.me', 'getairmail.com',
+]);
+
 const RegisterPage = () => {
   const { handleRegister, loading, error, clearError } = useAuth();
   const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,9 +58,26 @@ const RegisterPage = () => {
   const [role, setRole] = useState('student');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
 
+  const passwordChecks = [
+    { label: 'At least 8 characters', valid: password.length >= 8 },
+    { label: 'At least one uppercase letter', valid: /[A-Z]/.test(password) },
+    { label: 'At least one lowercase letter', valid: /[a-z]/.test(password) },
+    { label: 'At least one number', valid: /[0-9]/.test(password) },
+    { label: 'At least one special character', valid: /[^a-zA-Z0-9]/.test(password) },
+  ];
+
+  const allPasswordChecksPass = passwordChecks.every((c) => c.valid);
   const passwordsMatch = password.length > 0 && password === confirmPassword;
   const showMismatch = confirmPassword.length > 0 && !passwordsMatch;
+
+  const isEmailFormatValid = EMAIL_REGEX.test(email);
+  const emailDomain = email.split('@')[1]?.toLowerCase();
+  const isEmailDomainOk = !BLOCKED_DOMAINS.has(emailDomain);
+  const isEmailValid = isEmailFormatValid && isEmailDomainOk;
+  const showEmailError = emailTouched && !isEmailValid && email.length > 0;
 
   useEffect(() => {
     if (user) {
@@ -49,10 +89,12 @@ const RegisterPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!passwordsMatch) return;
+    if (!passwordsMatch || !allPasswordChecksPass || !isEmailValid) return;
     if (clearError) clearError();
     handleRegister({ name, email, password, role });
   };
+
+  const isFormValid = name.trim().length > 0 && isEmailValid && allPasswordChecksPass && passwordsMatch;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
@@ -96,9 +138,26 @@ const RegisterPage = () => {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                onBlur={() => setEmailTouched(true)}
+                placeholder="you@gmail.com"
+                className={`w-full rounded-lg border px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 ${
+                  showEmailError
+                    ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-100'
+                    : emailTouched && isEmailValid
+                      ? 'border-emerald-300 focus:border-emerald-500 focus:ring-emerald-100'
+                      : 'border-gray-200 focus:border-indigo-500 focus:ring-indigo-100'
+                }`}
               />
+              {showEmailError && (
+                <p className="text-xs text-rose-600">
+                  {!isEmailFormatValid
+                    ? 'Please enter a valid email address (e.g. you@gmail.com)'
+                    : 'Please use a real email address from a valid provider (e.g. Gmail, Outlook, Yahoo)'}
+                </p>
+              )}
+              {emailTouched && isEmailValid && (
+                <p className="text-xs text-emerald-600">Valid email address</p>
+              )}
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -109,9 +168,15 @@ const RegisterPage = () => {
                   type={showPassword ? 'text' : 'password'}
                   required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Create a password"
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2.5 pr-16 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                  onChange={(e) => { setPassword(e.target.value); setPasswordTouched(true); }}
+                  placeholder="Create a strong password"
+                  className={`w-full rounded-lg border px-3 py-2.5 pr-16 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 ${
+                    passwordTouched && !allPasswordChecksPass
+                      ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-100'
+                      : passwordTouched && allPasswordChecksPass
+                        ? 'border-emerald-300 focus:border-emerald-500 focus:ring-emerald-100'
+                        : 'border-gray-200 focus:border-indigo-500 focus:ring-indigo-100'
+                  }`}
                 />
                 <button
                   type="button"
@@ -121,6 +186,21 @@ const RegisterPage = () => {
                   {showPassword ? 'Hide' : 'Show'}
                 </button>
               </div>
+
+              {passwordTouched && (
+                <div className="mt-2 flex flex-col gap-1.5 rounded-lg border border-gray-100 bg-gray-50 p-3">
+                  {passwordChecks.map((check) => (
+                    <div key={check.label} className="flex items-center gap-2">
+                      <span className={`flex-shrink-0 ${check.valid ? 'text-emerald-500' : 'text-gray-300'}`}>
+                        {check.valid ? <CheckIcon /> : <XIcon />}
+                      </span>
+                      <span className={`text-xs ${check.valid ? 'text-emerald-700' : 'text-gray-500'}`}>
+                        {check.label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -136,7 +216,9 @@ const RegisterPage = () => {
                   className={`w-full rounded-lg border px-3 py-2.5 pr-16 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 ${
                     showMismatch
                       ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-100'
-                      : 'border-gray-200 focus:border-indigo-500 focus:ring-indigo-100'
+                      : passwordsMatch
+                        ? 'border-emerald-300 focus:border-emerald-500 focus:ring-emerald-100'
+                        : 'border-gray-200 focus:border-indigo-500 focus:ring-indigo-100'
                   }`}
                 />
                 <button
@@ -179,7 +261,7 @@ const RegisterPage = () => {
 
             <button
               type="submit"
-              disabled={loading || showMismatch}
+              disabled={loading || !isFormValid}
               className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-70"
             >
               {loading && <Spinner />}
@@ -197,7 +279,6 @@ const RegisterPage = () => {
             </div>
           </div>
 
-        
           <a
             href={`${import.meta.env.VITE_API_URL}/auth/google`}
             className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"

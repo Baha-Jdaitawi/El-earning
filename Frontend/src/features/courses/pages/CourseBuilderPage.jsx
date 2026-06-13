@@ -84,6 +84,24 @@ const CursorClickIcon = ({ className }) => (
   </svg>
 );
 
+const CheckIcon = () => (
+  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
+    <path d="m5 12 4.5 4.5L19 7" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const ConfirmDialog = ({ message, onConfirm, onCancel }) => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 px-4">
+    <div className="w-full max-w-sm rounded-2xl border border-gray-100 bg-white p-6 shadow-xl">
+      <p className="text-sm text-gray-700">{message}</p>
+      <div className="mt-5 flex justify-end gap-3">
+        <button onClick={onCancel} className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
+        <button onClick={onConfirm} className="rounded-lg bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-700">Delete</button>
+      </div>
+    </div>
+  </div>
+);
+
 const ModuleForm = ({ initial = '', onSave, onCancel }) => {
   const [title, setTitle] = useState(initial);
   const handleSubmit = (e) => {
@@ -123,68 +141,6 @@ const LessonInlineForm = ({ onSave, onCancel }) => {
       <div className="flex justify-end gap-2">
         <button type="button" onClick={onCancel} className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
         <button type="submit" disabled={!title.trim()} className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-60">Add Lesson</button>
-      </div>
-    </form>
-  );
-};
-
-const QuizForm = ({ onSave, onCancel }) => {
-  const [question, setQuestion] = useState('');
-  const [answer, setAnswer] = useState('');
-  const [type, setType] = useState('multiple_choice');
-  const [points, setPoints] = useState('10');
-  const [options, setOptions] = useState(['', '', '', '']);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!question.trim()) return;
-    onSave({
-      question: question.trim(),
-      answer: answer.trim(),
-      quiz_type: type,
-      points: parseInt(points, 10) || 0,
-      options: type === 'multiple_choice' ? options.filter(Boolean) : null,
-    });
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3 rounded-xl border border-indigo-100 bg-indigo-50 p-4">
-      <div className="flex flex-col gap-1.5">
-        <label className={labelClasses}>Question</label>
-        <input autoFocus value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="Enter the quiz question..." className={inputClasses} />
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <label className={labelClasses}>Correct Answer</label>
-        <input value={answer} onChange={(e) => setAnswer(e.target.value)} placeholder="Correct answer..." className={inputClasses} />
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="flex flex-col gap-1.5">
-          <label className={labelClasses}>Quiz Type</label>
-          <div className="relative">
-            <select value={type} onChange={(e) => setType(e.target.value)} className={`${inputClasses} appearance-none pr-9`}>
-              <option value="multiple_choice">Multiple Choice</option>
-              <option value="true_false">True / False</option>
-              <option value="text">Text</option>
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          </div>
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className={labelClasses}>Points</label>
-          <input type="number" min={0} value={points} onChange={(e) => setPoints(e.target.value)} className={inputClasses} />
-        </div>
-      </div>
-      {type === 'multiple_choice' && (
-        <div className="flex flex-col gap-1.5">
-          <label className={labelClasses}>Options</label>
-          {options.map((opt, i) => (
-            <input key={i} value={opt} onChange={(e) => { const o = [...options]; o[i] = e.target.value; setOptions(o); }} placeholder={`Option ${i + 1}`} className={inputClasses} />
-          ))}
-        </div>
-      )}
-      <div className="flex justify-end gap-2">
-        <button type="button" onClick={onCancel} className="rounded-lg border border-gray-200 bg-white px-3.5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
-        <button type="submit" className="rounded-lg bg-indigo-600 px-3.5 py-2 text-sm font-medium text-white hover:bg-indigo-700">Save Quiz</button>
       </div>
     </form>
   );
@@ -237,9 +193,10 @@ const LessonDetail = ({ lesson, onSaveLesson, onAddQuiz, onDeleteQuiz, onAddAssi
     video_url: lesson.video_url || '',
     video_duration: lesson.video_duration || '',
   });
-  const [showQuizForm, setShowQuizForm] = useState(false);
   const [showAssignmentForm, setShowAssignmentForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [confirm, setConfirm] = useState(null);
 
   useEffect(() => {
     setForm({
@@ -248,6 +205,7 @@ const LessonDetail = ({ lesson, onSaveLesson, onAddQuiz, onDeleteQuiz, onAddAssi
       video_url: lesson.video_url || '',
       video_duration: lesson.video_duration || '',
     });
+    setSaved(false);
   }, [lesson.id]);
 
   const handleSave = async (e) => {
@@ -255,6 +213,8 @@ const LessonDetail = ({ lesson, onSaveLesson, onAddQuiz, onDeleteQuiz, onAddAssi
     setSaving(true);
     await onSaveLesson(lesson.id, form);
     setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
   };
 
   const durationInMinutes = form.video_duration ? Math.round(form.video_duration / 60) : '';
@@ -264,8 +224,18 @@ const LessonDetail = ({ lesson, onSaveLesson, onAddQuiz, onDeleteQuiz, onAddAssi
     setForm({ ...form, video_duration: minutes ? parseInt(minutes) * 60 : '' });
   };
 
+  const handleDeleteQuiz = (quizId) => {
+    setConfirm({ message: 'Delete this quiz question?', onConfirm: () => { onDeleteQuiz(quizId); setConfirm(null); } });
+  };
+
+  const handleDeleteAssignment = (assignmentId) => {
+    setConfirm({ message: 'Delete this assignment?', onConfirm: () => { onDeleteAssignment(assignmentId); setConfirm(null); } });
+  };
+
   return (
     <div className="flex flex-col gap-8">
+      {confirm && <ConfirmDialog message={confirm.message} onConfirm={confirm.onConfirm} onCancel={() => setConfirm(null)} />}
+
       <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-gray-900">Lesson Details</h2>
         <form onSubmit={handleSave} className="mt-4 flex flex-col gap-4">
@@ -287,7 +257,12 @@ const LessonDetail = ({ lesson, onSaveLesson, onAddQuiz, onDeleteQuiz, onAddAssi
               <input type="number" min={0} value={durationInMinutes} onChange={handleDurationChange} placeholder="e.g. 60" className={inputClasses} />
             </div>
           </div>
-          <div className="flex justify-end">
+          <div className="flex items-center justify-end gap-3">
+            {saved && (
+              <span className="flex items-center gap-1.5 text-sm font-medium text-emerald-600">
+                <CheckIcon /> Saved successfully!
+              </span>
+            )}
             <button type="submit" disabled={saving} className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-70">
               {saving ? 'Saving...' : 'Save Lesson'}
             </button>
@@ -296,23 +271,16 @@ const LessonDetail = ({ lesson, onSaveLesson, onAddQuiz, onDeleteQuiz, onAddAssi
       </section>
 
       <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
-              <QuizIcon className="h-5 w-5" />
-            </span>
-            <h2 className="text-lg font-semibold text-gray-900">Quizzes</h2>
-            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500">{lesson.quizzes?.length || 0}</span>
-          </div>
-          {!showQuizForm && (
-            <button onClick={() => setShowQuizForm(true)} className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50">
-              <PlusIcon className="h-4 w-4" /> Add Quiz
-            </button>
-          )}
+        <div className="flex items-center gap-2 mb-4">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+            <QuizIcon className="h-5 w-5" />
+          </span>
+          <h2 className="text-lg font-semibold text-gray-900">Quizzes</h2>
+          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500">{lesson.quizzes?.length || 0}</span>
         </div>
-        <div className="mt-4 flex flex-col gap-3">
-          {(!lesson.quizzes || lesson.quizzes.length === 0) && !showQuizForm && (
-            <p className="rounded-lg border border-dashed border-gray-200 px-4 py-6 text-center text-sm text-gray-400">No quizzes yet.</p>
+        <div className="flex flex-col gap-3">
+          {(!lesson.quizzes || lesson.quizzes.length === 0) && (
+            <p className="rounded-lg border border-dashed border-gray-200 px-4 py-6 text-center text-sm text-gray-400">No quizzes yet. Use the AI generator below.</p>
           )}
           {lesson.quizzes?.map((quiz) => (
             <div key={quiz.id} className="flex items-start justify-between gap-3 rounded-xl border border-gray-100 p-4">
@@ -324,16 +292,11 @@ const LessonDetail = ({ lesson, onSaveLesson, onAddQuiz, onDeleteQuiz, onAddAssi
                   <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">{quiz.points} pts</span>
                 </div>
               </div>
-              <button onClick={() => onDeleteQuiz(quiz.id)} className={`${iconBtn} hover:text-rose-600`}>
+              <button onClick={() => handleDeleteQuiz(quiz.id)} className={`${iconBtn} hover:text-rose-600`}>
                 <TrashIcon className="h-4 w-4" />
               </button>
             </div>
           ))}
-          {showQuizForm && (
-            <QuizForm onSave={(q) => { onAddQuiz(q); setShowQuizForm(false); }} onCancel={() => setShowQuizForm(false)} />
-          )}
-
-          {/* AI Quiz Generator */}
           <AIQuizGenerator onSaveQuiz={onAddQuiz} />
         </div>
       </section>
@@ -348,9 +311,9 @@ const LessonDetail = ({ lesson, onSaveLesson, onAddQuiz, onDeleteQuiz, onAddAssi
             <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500">{lesson.assignments?.length || 0}</span>
           </div>
           {!showAssignmentForm && (
-            <button onClick={() => setShowAssignmentForm(true)} className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50">
-              <PlusIcon className="h-4 w-4" /> Add Assignment
-            </button>
+<button onClick={() => setShowAssignmentForm(true)} className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50">
+  <PlusIcon className="h-4 w-4" /><span className="hidden sm:inline">Add Assignment</span>
+</button>
           )}
         </div>
         <div className="mt-4 flex flex-col gap-3">
@@ -367,7 +330,7 @@ const LessonDetail = ({ lesson, onSaveLesson, onAddQuiz, onDeleteQuiz, onAddAssi
                   <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">{a.max_points} pts</span>
                 </div>
               </div>
-              <button onClick={() => onDeleteAssignment(a.id)} className={`${iconBtn} hover:text-rose-600`}>
+              <button onClick={() => handleDeleteAssignment(a.id)} className={`${iconBtn} hover:text-rose-600`}>
                 <TrashIcon className="h-4 w-4" />
               </button>
             </div>
@@ -392,6 +355,7 @@ const CourseBuilderPage = () => {
   const [showAddModule, setShowAddModule] = useState(false);
   const [editingModuleId, setEditingModuleId] = useState(null);
   const [addingLessonTo, setAddingLessonTo] = useState(null);
+  const [confirm, setConfirm] = useState(null);
 
   useEffect(() => { loadCourse(); }, [id]);
 
@@ -442,15 +406,20 @@ const CourseBuilderPage = () => {
     } catch (err) { console.error(err); }
   };
 
-  const deleteModule = async (moduleId) => {
-    if (!window.confirm('Delete this module and all its lessons?')) return;
-    try {
-      await api.delete(`/modules/${moduleId}`);
-      if (selectedLesson && modules.find((m) => m.id === moduleId)?.lessons.find((l) => l.id === selectedLesson.id)) {
-        setSelectedLesson(null);
+  const deleteModule = (moduleId) => {
+    setConfirm({
+      message: 'Delete this module and all its lessons?',
+      onConfirm: async () => {
+        try {
+          await api.delete(`/modules/${moduleId}`);
+          if (selectedLesson && modules.find((m) => m.id === moduleId)?.lessons.find((l) => l.id === selectedLesson.id)) {
+            setSelectedLesson(null);
+          }
+          loadCourse();
+        } catch (err) { console.error(err); }
+        setConfirm(null);
       }
-      loadCourse();
-    } catch (err) { console.error(err); }
+    });
   };
 
   const handleAddLesson = async (moduleId, title) => {
@@ -463,13 +432,18 @@ const CourseBuilderPage = () => {
     } catch (err) { console.error(err); }
   };
 
-  const deleteLesson = async (lessonId) => {
-    if (!window.confirm('Delete this lesson?')) return;
-    try {
-      await api.delete(`/lessons/${lessonId}`);
-      if (selectedLesson?.id === lessonId) setSelectedLesson(null);
-      loadCourse();
-    } catch (err) { console.error(err); }
+  const deleteLesson = (lessonId) => {
+    setConfirm({
+      message: 'Delete this lesson?',
+      onConfirm: async () => {
+        try {
+          await api.delete(`/lessons/${lessonId}`);
+          if (selectedLesson?.id === lessonId) setSelectedLesson(null);
+          loadCourse();
+        } catch (err) { console.error(err); }
+        setConfirm(null);
+      }
+    });
   };
 
   const saveLesson = async (lessonId, data) => {
@@ -531,6 +505,8 @@ const CourseBuilderPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {confirm && <ConfirmDialog message={confirm.message} onConfirm={confirm.onConfirm} onCancel={() => setConfirm(null)} />}
+
       <header className="border-b border-gray-100 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
           <p className="text-xs font-medium uppercase tracking-wide text-indigo-600">Course Builder</p>

@@ -49,7 +49,7 @@ const CourseStudentsPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-4xl px-3 py-6 sm:px-6 lg:px-8">
 
         <header className="mb-6">
           <button
@@ -61,7 +61,7 @@ const CourseStudentsPage = () => {
             </svg>
             Back to Dashboard
           </button>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+          <h1 className="text-xl font-bold tracking-tight text-gray-900 sm:text-2xl">
             {course?.title || 'Course Students'}
           </h1>
           <p className="mt-1 text-sm text-gray-500">
@@ -82,37 +82,42 @@ const CourseStudentsPage = () => {
           <div className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
             <ul className="divide-y divide-gray-100">
               {students.map((enrollment) => (
-                <li key={enrollment.id} className="flex items-center gap-4 px-5 py-4">
-                  {enrollment.avatar ? (
-                    <img src={enrollment.avatar} alt={enrollment.name} className="h-10 w-10 flex-shrink-0 rounded-full object-cover" />
-                  ) : (
-                    <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700">
-                      {getInitials(enrollment.name)}
-                    </span>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-gray-900">{enrollment.name}</p>
-                    <p className="text-sm text-gray-500">{enrollment.email}</p>
-                  </div>
-                  <div className="flex flex-shrink-0 items-center gap-3">
-                    <div className="text-right">
-                      <p className="text-xs text-gray-500">Progress</p>
-                      <p className="text-sm font-semibold text-gray-900">{Math.round(enrollment.progress || 0)}%</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs text-gray-500">Enrolled</p>
-                      <p className="text-sm text-gray-600">{new Date(enrollment.enrolled_at).toLocaleDateString()}</p>
-                    </div>
-                    {enrollment.completed && (
-                      <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
-                        Completed
+                <li key={enrollment.id} className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:gap-4 sm:px-5">
+                  <div className="flex items-center gap-3 min-w-0">
+                    {enrollment.avatar ? (
+                      <img src={enrollment.avatar} alt={enrollment.name} className="h-10 w-10 flex-shrink-0 rounded-full object-cover" />
+                    ) : (
+                      <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700">
+                        {getInitials(enrollment.name)}
                       </span>
                     )}
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-gray-900 truncate">{enrollment.name}</p>
+                      <p className="text-sm text-gray-500 truncate">{enrollment.email}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-between gap-2 sm:ml-auto sm:flex-shrink-0">
+                    <div className="flex items-center gap-3">
+                      <div className="text-left sm:text-right">
+                        <p className="text-xs text-gray-500">Progress</p>
+                        <p className="text-sm font-semibold text-gray-900">{Math.round(enrollment.progress || 0)}%</p>
+                      </div>
+                      <div className="text-left sm:text-right">
+                        <p className="text-xs text-gray-500">Enrolled</p>
+                        <p className="text-sm text-gray-600">{new Date(enrollment.enrolled_at).toLocaleDateString()}</p>
+                      </div>
+                      {enrollment.completed && (
+                        <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
+                          Completed
+                        </span>
+                      )}
+                    </div>
                     <button
                       onClick={() => navigate(`/instructor/messages/${enrollment.user_id}`)}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200"
+                      className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200"
                     >
-                      <ChatIcon /> Message
+                      <ChatIcon /> <span className="hidden sm:inline">Message</span>
                     </button>
                   </div>
                 </li>
@@ -120,7 +125,7 @@ const CourseStudentsPage = () => {
             </ul>
 
             {meta?.totalPages > 1 && (
-              <div className="flex items-center justify-between border-t border-gray-100 px-5 py-4">
+              <div className="flex items-center justify-between border-t border-gray-100 px-4 py-4 sm:px-5">
                 <button
                   onClick={() => setPage((p) => p - 1)}
                   disabled={page <= 1}

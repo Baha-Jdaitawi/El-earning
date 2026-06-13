@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { fetchCourses } from '../../../store/slices/coursesSlice.js';
 import { getCategoriesApi } from '../../dashboard/api/dashboardApi.js';
+import { fetchMyEnrollments } from '../../../store/slices/enrollmentSlice.js';
 import CourseCard from '../components/CourseCard.jsx';
 import CourseFilters from '../components/CourseFilters.jsx';
+import EnrolledCourseCard from '../../dashboard/components/EnrolledCourseCard.jsx';
 
 const ChevronLeft = () => (
   <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
@@ -49,26 +52,36 @@ const getPageNumbers = (current, total) => {
 
 const CoursesPage = () => {
   const dispatch = useDispatch();
+  const location = useLocation();
+  const navigate = useNavigate();
   const { courses, meta, loading } = useSelector((state) => state.courses);
+  const { enrollments, loading: enrollmentsLoading } = useSelector((state) => state.enrollment);
+  const { user } = useSelector((state) => state.auth);
   const [categories, setCategories] = useState([]);
   const [query, setQuery] = useState('');
   const [filters, setFilters] = useState({ category: '', level: '', sort: 'created_at' });
   const [page, setPage] = useState(1);
+
+  const isMyCourses = location.pathname === '/my-courses';
 
   useEffect(() => {
     getCategoriesApi().then((res) => setCategories(res.data.data || [])).catch(() => {});
   }, []);
 
   useEffect(() => {
-    dispatch(fetchCourses({
-      page,
-      limit: 12,
-      search: query || undefined,
-      category_id: filters.category || undefined,
-      level: filters.level || undefined,
-      is_published: true,
-    }));
-  }, [dispatch, page, query, filters]);
+    if (isMyCourses) {
+      dispatch(fetchMyEnrollments());
+    } else {
+      dispatch(fetchCourses({
+        page,
+        limit: 12,
+        search: query || undefined,
+        category_id: filters.category || undefined,
+        level: filters.level || undefined,
+        is_published: true,
+      }));
+    }
+  }, [dispatch, page, query, filters, isMyCourses]);
 
   const handleSearch = (q) => {
     setQuery(q);
@@ -80,6 +93,44 @@ const CoursesPage = () => {
     setPage(1);
   };
 
+  // My Courses view
+  if (isMyCourses) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <header className="mb-6">
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">My Courses</h1>
+            <p className="mt-1 text-sm text-gray-500">Courses you are enrolled in.</p>
+          </header>
+
+          {enrollmentsLoading ? (
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)}
+            </div>
+          ) : enrollments.length === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-200 bg-white px-6 py-16 text-center">
+              <h2 className="text-base font-semibold text-gray-900">No enrolled courses yet</h2>
+              <p className="mt-1 max-w-sm text-sm text-gray-500">Browse our catalog and enroll in a course to get started.</p>
+              <button
+                onClick={() => navigate('/courses')}
+                className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+              >
+                Browse Courses
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {enrollments.map((e) => (
+                <EnrolledCourseCard key={e.id} enrollment={e} />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Browse Courses view
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">

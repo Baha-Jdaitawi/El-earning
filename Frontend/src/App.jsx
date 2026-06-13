@@ -45,7 +45,7 @@ const PublicLayout = () => (
 
 const StudentLayout = () => (
   <ProtectedRoute roles={['student']}>
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen flex-col bg-gray-50 lg:flex-row">
       <Sidebar />
       <div className="flex-1 overflow-auto">
         <Outlet />
@@ -56,7 +56,7 @@ const StudentLayout = () => (
 
 const InstructorLayout = () => (
   <ProtectedRoute roles={['instructor', 'admin']}>
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen flex-col bg-gray-50 lg:flex-row">
       <Sidebar />
       <div className="flex-1 overflow-auto">
         <Outlet />
@@ -67,7 +67,7 @@ const InstructorLayout = () => (
 
 const AdminLayout = () => (
   <ProtectedRoute roles={['admin']}>
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen flex-col bg-gray-50 lg:flex-row">
       <Sidebar />
       <div className="flex-1 overflow-auto">
         <Outlet />

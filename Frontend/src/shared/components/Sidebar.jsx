@@ -13,7 +13,6 @@ const ChatIcon = () => (
 const NAV_BY_ROLE = {
   student: [
     { label: 'Dashboard', href: '/dashboard', icon: <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none"><rect x={4} y={4} width={7} height={7} rx={1.5} stroke="currentColor" strokeWidth={1.8} /><rect x={13} y={4} width={7} height={5} rx={1.5} stroke="currentColor" strokeWidth={1.8} /><rect x={13} y={11} width={7} height={9} rx={1.5} stroke="currentColor" strokeWidth={1.8} /><rect x={4} y={13} width={7} height={7} rx={1.5} stroke="currentColor" strokeWidth={1.8} /></svg> },
-    { label: 'My Courses', href: '/my-courses', icon: <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v15H5.5A1.5 1.5 0 0 0 4 20.5V5.5ZM20 5.5A1.5 1.5 0 0 0 18.5 4H13v15h5.5a1.5 1.5 0 0 1 1.5 1.5V5.5Z" stroke="currentColor" strokeWidth={1.8} strokeLinejoin="round" /></svg> },
     { label: 'Assignments', href: '/assignments', icon: <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none"><rect x={5} y={5} width={14} height={16} rx={2} stroke="currentColor" strokeWidth={1.8} /><path d="M9 5V3.8A.8.8 0 0 1 9.8 3h4.4a.8.8 0 0 1 .8.8V5" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" /><path d="M9 11h6M9 15h4" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" /></svg> },
     { label: 'Progress', href: '/progress', icon: <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none"><path d="M5 5v14h14" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" /><path d="M8 14l3-3 2 2 4-4" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" /></svg> },
     { label: 'Messages', href: '/messages', icon: <ChatIcon /> },
@@ -49,7 +48,6 @@ const SidebarContent = ({ user, navItems, onLogout, onNavigate }) => {
 
   return (
     <div className="flex h-full flex-col bg-white">
-      {/* Logo */}
       <div className="flex items-center gap-2.5 border-b border-gray-100 px-5 py-5">
         <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-white">
           <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
@@ -61,7 +59,6 @@ const SidebarContent = ({ user, navItems, onLogout, onNavigate }) => {
         <NotificationDropdown />
       </div>
 
-      {/* Nav */}
       <nav className="flex-1 overflow-y-auto px-3 py-4">
         <ul className="flex flex-col gap-1">
           {navItems.map((item) => {
@@ -86,7 +83,6 @@ const SidebarContent = ({ user, navItems, onLogout, onNavigate }) => {
         </ul>
       </nav>
 
-      {/* User + logout */}
       <div className="border-t border-gray-100 p-3">
         <div className="flex items-center gap-3 rounded-lg px-2 py-2">
           {user?.avatar ? (
@@ -129,8 +125,7 @@ const Sidebar = () => {
 
   return (
     <>
-      {/* Mobile top bar */}
-      <div className="flex items-center justify-between border-b border-gray-100 bg-white px-4 py-3 lg:hidden">
+      <div className="sticky top-0 z-40 flex items-center justify-between border-b border-gray-100 bg-white px-4 py-3 lg:hidden">
         <div className="flex items-center gap-2.5">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white">
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
@@ -153,21 +148,19 @@ const Sidebar = () => {
         </div>
       </div>
 
-      {/* Desktop sidebar */}
       <aside className="hidden w-64 flex-shrink-0 border-r border-gray-100 lg:block">
         <div className="sticky top-0 h-screen">
           <SidebarContent user={user} navItems={navItems} onLogout={handleLogout} />
         </div>
       </aside>
 
-      {/* Mobile drawer */}
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-gray-900/40" onClick={() => setOpen(false)} />
-          <div className="absolute inset-y-0 left-0 flex w-72 max-w-[80%] flex-col shadow-xl">
+          <div className="absolute bottom-0 left-0 top-14 flex w-72 max-w-[80%] flex-col shadow-xl">
             <button
               onClick={() => setOpen(false)}
-              className="absolute right-3 top-3.5 z-10 flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100"
+              className="absolute right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200"
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
                 <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" />

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { getLessonApi, getModulesApi } from '../api/lessonsApi.js';
@@ -142,6 +142,7 @@ const LessonPage = () => {
   const { courseId, lessonId } = useParams();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
+  const startTimeRef = useRef(Date.now());
 
   const [lesson, setLesson] = useState(null);
   const [modules, setModules] = useState([]);
@@ -158,6 +159,7 @@ const LessonPage = () => {
   useEffect(() => {
     loadLesson();
     loadModules();
+    startTimeRef.current = Date.now();
   }, [lessonId, courseId]);
 
   const loadLesson = async () => {
@@ -201,7 +203,8 @@ const LessonPage = () => {
   const handleComplete = async () => {
     setCompleting(true);
     try {
-      await api.post(`/progress/lesson/${lessonId}/complete`, { time_spent: 0 });
+      const timeSpent = Math.floor((Date.now() - startTimeRef.current) / 1000);
+      await api.post(`/progress/lesson/${lessonId}/complete`, { time_spent: timeSpent });
       setProgress((prev) => ({ ...prev, [parseInt(lessonId)]: true }));
     } catch (err) {
       console.error(err);
@@ -257,7 +260,6 @@ const LessonPage = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto flex max-w-[1600px] flex-col lg:flex-row">
 
-        {/* Sidebar */}
         <aside className="w-full flex-shrink-0 border-b border-gray-100 bg-white lg:max-h-screen lg:w-80 lg:overflow-y-auto lg:border-b-0 lg:border-r">
           <div className="border-b border-gray-100 px-5 py-4">
             <p className="text-xs font-medium uppercase tracking-wide text-gray-400">Course</p>
@@ -311,12 +313,10 @@ const LessonPage = () => {
           </nav>
         </aside>
 
-        {/* Main content */}
         <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl">
             <h1 className="text-2xl font-bold tracking-tight text-gray-900">{lesson.title}</h1>
 
-            {/* Video */}
             <div className="mt-4 flex aspect-video items-center justify-center overflow-hidden rounded-2xl bg-gray-900">
               {lesson.video_url ? (
                 <iframe src={lesson.video_url} className="h-full w-full" allowFullScreen title={lesson.title} />
@@ -332,7 +332,6 @@ const LessonPage = () => {
               )}
             </div>
 
-            {/* Mark complete */}
             <div className="mt-4 flex items-center justify-between gap-3">
               <p className="text-sm text-gray-500">
                 {isComplete ? "You've completed this lesson." : 'Finished watching? Mark it done.'}
@@ -348,14 +347,12 @@ const LessonPage = () => {
               </button>
             </div>
 
-            {/* Content */}
             {lesson.content && (
               <article className="mt-8 border-t border-gray-100 pt-8">
                 <p className="leading-relaxed text-gray-700 whitespace-pre-wrap">{lesson.content}</p>
               </article>
             )}
 
-            {/* AI Course Assistant */}
             <div className="mt-8 border-t border-gray-100 pt-8">
               <CourseAssistant
                 courseTitle={lesson.course_title}
@@ -363,7 +360,6 @@ const LessonPage = () => {
               />
             </div>
 
-            {/* Assignments */}
             {assignments.length > 0 && (
               <section className="mt-8 border-t border-gray-100 pt-8">
                 <h2 className="mb-4 text-lg font-semibold text-gray-900">
@@ -395,7 +391,6 @@ const LessonPage = () => {
               </section>
             )}
 
-            {/* Navigation */}
             <nav className="mt-10 flex items-center justify-between gap-3 border-t border-gray-100 pt-6">
               <button
                 onClick={() => handleNavigate('prev')}
@@ -415,7 +410,6 @@ const LessonPage = () => {
           </div>
         </main>
 
-        {/* Quiz panel */}
         {quizzes.length > 0 && (
           <aside className="w-full flex-shrink-0 border-t border-gray-100 bg-white lg:max-h-screen lg:w-96 lg:overflow-y-auto lg:border-l lg:border-t-0">
             <div className="border-b border-gray-100 px-5 py-4">
